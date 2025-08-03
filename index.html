@@ -1,6 +1,88 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Excel Upload</title>
+        <title>Excel Upload to Xero</title>
+        //Load the SheetJS library from CDN (Excel sheets to JSON or HTML)
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+        
     </head>
+    <body>
+        <h2>Upload Excel Sheet to Xero</h2>
+        <input type="file" id="excelFile" accept=".xlsx, .xls"/>
+
+        <button id="uploadBtn">Send to Backend</button>
+        <div id="status"></div>
+
+        <script>
+            let parsedData = []; // Global variable to hold parsed Excel data
+
+            //Handle Excel File Upload&Parsing
+            //Listens for the user to select a file
+            //Grab the first file (Excel file) from the input element
+            document.getElementById('excelFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if(!file) return;
+                
+
+                //create FileReaders, rethe contents of a file in the browser
+                //reader.onload defines what happens once the file is fully read
+                const reader = new FileReader();
+                reader.onload = function(e) {
+
+                    //Converts file into unit8array which SheetJS can process
+                    //XLSX.read() reads that array and creats a workbook object
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    //Selects the first sheet in the Excel workbook
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                    // Convert sheet to JSON (array of objects)
+                    parsedData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                    // Enable the button after parsing
+                    document.getElementById('uploadBtn').disabled = false;
+
+                    // Optional: Show preview
+                    let preview = '<table><tr>';
+                    //Get the header name from first row of the JSON data
+                    Object.keys(parsedData[0]).forEach(header => {
+                    preview += `<th>${header}</th>`;
+                    });
+                    preview += '</tr>';
+
+                    //Loops through each row of Excel data -> get values from that row -> inserted into table
+                    parsedData.forEach(row => {
+                    preview += '<tr>';
+                    Object.values(row).forEach(cell => {
+                        preview += `<td>${cell}</td>`;
+                    });
+                    preview += '</tr>';
+                    });
+                    preview += '</table>';
+                    document.getElementById('status').innerHTML = preview;
+                };
+                reader.readAsArrayBuffer(file);
+                });
+
+                //Sends a POST request to backend endpoint
+                document.getElementById('uploadBtn').addEventListener('click', function() {
+                fetch('/api/upload-to-xero', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: parsedData })
+                })
+                //if the backend responds successfully, it shows a success message
+                .then(response => response.json())
+                .then(result => {
+                    document.getElementById('status').innerHTML = `<p style="color: green;">Success: ${result.message}</p>`;
+                })
+                //if there's an error, it logs it and shows an error message
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('status').innerHTML = `<p style="color: red;">Failed to upload data.</p>`;
+                });
+                });
+        </script>
+    </body>
 </html>
