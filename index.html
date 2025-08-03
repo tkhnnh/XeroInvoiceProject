@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
         <title>Excel Upload to Xero</title>
-        //Load the SheetJS library from CDN (Excel sheets to JSON or HTML)
-        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
         
+        <!-- Load the SheetJS library from CDN (Excel sheets to JSON or HTML) -->
+        
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 30px; max-width: 800px; margin: auto; }
+            input[type="file"] { margin-top: 20px; }
+            button { margin-top: 20px; padding: 10px 20px; }
+            table { margin-top: 20px; border-collapse: collapse; width: 100%; }
+            td, th { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            th { background: #f2f2f2; }
+            #status { margin-top: 20px; font-weight: bold; }
+        </style>
     </head>
     <body>
         <h2>Upload Excel Sheet to Xero</h2>
